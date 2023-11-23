@@ -1,8 +1,8 @@
 ---
 home: true
-heroImage: /hero.png
-heroText: Hero 标题
-tagline: Hero 副标题
+heroImage: /img/home.png
+heroText: 哇记
+tagline: 不积小流无以成江海，不积跬步无以至千里
 actionText: 快速上手 →
 actionLink: /zh/guide/
 features:
