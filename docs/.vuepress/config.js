@@ -28,7 +28,11 @@ module.exports = {
             title:'中级•软件设计师笔记',
             collapsable: false,
             children:[
-              { title: '基础知识科目-计算机系统基础知识', path: '/softexam/middle/computerFoundation'}
+              { title: '基础知识科目-计算机系统基础知识', path: '/softexam/middle/computerFoundation'},
+              { title: '基础知识科目-系统开发和运行知识', path: '/softexam/middle/systemDevelopment'},
+              { title: '基础知识科目-面向对象基础知识', path: '/softexam/middle/objectOriented'},
+              { title: '基础知识科目-网络与信息安全知识', path: '/softexam/middle/networkAndInfoSecurity'},
+              { title: '基础知识科目-标准化信息化和知识产权基础知识', path: '/softexam/middle/intellectualPropertyRight'},
             ]
           }
         ]
