@@ -3,14 +3,17 @@ home: true
 heroImage: /img/home.png
 heroText: 哇记
 tagline: 不积小流无以成江海，不积跬步无以至千里
-actionText: 快速上手 →
-actionLink: /zh/guide/
+# actionText: 快速上手 →
+# actionLink: /zh/guide/
 features:
-- title: 简洁至上
-  details: 以 Markdown 为中心的项目结构，以最少的配置帮助你专注于写作。
-- title: Vue驱动
-  details: 享受 Vue + webpack 的开发体验，在 Markdown 中使用 Vue 组件，同时可以使用 Vue 来开发自定义主题。
-- title: 高性能
-  details: VuePress 为每个页面预渲染生成静态的 HTML，同时在页面被加载的时候，将作为 SPA 运行。
-footer: MIT Licensed | Copyright © 2018-present Evan You
+- title: 知识构建
+  details: 记录就像是复盘,迭代自己,不断试错,反馈. 无论是前端还是后端,甚至是其他,多动手,多实践才是真理。
+- title: 知识积累
+  details: 不积小流无以成江海，不积跬步无以至千里。
+- title: 知识分享
+  details: 为别人鼓掌的人也是在给自己加油，如果文档对你有帮助，那我很开心。
+# footer: MIT Licensed | Copyright © 2018-present 哇子 | 蜀ICP备2023022177号-1
 ---
+::: slot footer
+<p>MIT Licensed | Copyright © 2023-present</p> <a href="https://blog.wazicode.top" target="_blank">哇子</a> | <a href="https://beian.miit.gov.cn/" target="_blank">蜀ICP备2023022177号-1</a>
+:::
