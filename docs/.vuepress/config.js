@@ -16,6 +16,7 @@ module.exports = {
           text: '软考',
           ariaLabel: 'softexam',
           items:[
+            {text:'博主软考之旅',link:'/softexam/myselftrip/'},
             {text:'中级•软件设计师',link:'/softexam/middle/computerFoundation'},
           ]
         },
