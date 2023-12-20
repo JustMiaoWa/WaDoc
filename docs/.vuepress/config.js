@@ -20,7 +20,14 @@ module.exports = {
             {text:'中级•软件设计师',link:'/softexam/middle/computerFoundation'},
           ]
         },
-        { text: '关于', link: '/about/'}
+        { text: '关于', link: '/about/'},
+        { 
+          text:'前端',  
+          ariaLabel: 'front',
+          items:[
+            {text:'JS高级',link:'/notes/front/jsAdvance'},
+          ]
+        }
       ],
       // 侧边栏
       sidebar:{
@@ -34,6 +41,16 @@ module.exports = {
               { title: '基础知识科目-面向对象基础知识', path: '/softexam/middle/objectOriented'},
               { title: '基础知识科目-网络与信息安全知识', path: '/softexam/middle/networkAndInfoSecurity'},
               { title: '基础知识科目-标准化信息化和知识产权基础知识', path: '/softexam/middle/intellectualPropertyRight'},
+            ]
+          }
+        ],
+        '/notes/front':[
+          {
+            title:'JS高级',
+            collapsable: false,
+            children:[
+              { title:'JS高级知识', path:'/notes/front/jsAdvance'},
+              { title:'JS模块化', path:'/notes/front/jsModule'}
             ]
           }
         ]
