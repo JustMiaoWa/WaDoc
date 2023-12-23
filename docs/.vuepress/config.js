@@ -20,12 +20,17 @@ module.exports = {
             {text:'中级•软件设计师',link:'/softexam/middle/computerFoundation'},
           ]
         },
-        { text: '关于', link: '/about/'},
         { 
-          text:'前端',  
-          ariaLabel: 'front',
+          text: '关于', 
+          link: '/about/'
+        },
+        { 
+          text:'笔记',  
+          ariaLabel: 'notes',
           items:[
-            {text:'JS高级',link:'/notes/front/jsAdvance'},
+            {text:'前端',items:[
+              {text:'JS高级',link:'/notes/front/jsAdvance'},
+            ]},
           ]
         }
       ],
