@@ -29,7 +29,8 @@ module.exports = {
           ariaLabel: 'notes',
           items:[
             {text:'前端',items:[
-              {text:'JS高级',link:'/notes/front/jsAdvance'},
+              {text:'JS高级',link:'/notes/front/JSGaoji/jsAdvance'},
+              {text:'Vite搭建Vue3',link:'/notes/front/Vue3'}
             ]},
           ]
         }
@@ -49,13 +50,13 @@ module.exports = {
             ]
           }
         ],
-        '/notes/front':[
+        '/notes/front/JSGaoji':[
           {
             title:'JS高级',
             collapsable: false,
             children:[
-              { title:'JS高级知识', path:'/notes/front/jsAdvance'},
-              { title:'JS模块化', path:'/notes/front/jsModule'}
+              { title:'JS高级知识', path:'/notes/front/JSGaoji/jsAdvance'},
+              { title:'JS模块化', path:'/notes/front/JSGaoji/jsModule'}
             ]
           }
         ]
