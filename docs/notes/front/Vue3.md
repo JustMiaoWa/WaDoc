@@ -131,9 +131,9 @@ npm create vite@latest
 
 但是这样有个缺点，就是组件的名字name，还必须另外写一个script标签，当然这里有一些解决办法
 
-1. 就是像上方代码一样，写两个script标签
-2. 也可以直接不写组件的name，那么默认组件的文件名就是它的name
-3. 利用vite-plugin-vue-setup-extend插件实现
+1. **就是像上方代码一样，写两个script标签**
+2. **也可以直接不写组件的name，那么默认组件的文件名就是它的name**
+3. **利用vite-plugin-vue-setup-extend插件实现**
 
 下面讲解第三种方式如何实现：
 
@@ -178,4 +178,103 @@ export default defineConfig({
 ```
 
 ## 5、ref函数
+
+在原来的数据中，直接在setup中return对象的数据是<mark>不具备响应式的</mark>
+
+那如何实现呢？看下方代码
+
+```vue
+<template>
+  <div id="app">
+    <div id="textContainer">
+      {{ message }}
+    </div>
+    <button @click="changeText">修改文本</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+// 使用 ref 创建一个响应式数据
+const message = ref('hello, world!');
+
+// 定义方法
+const changeText = () => {
+  message.value = '你好，中国！';
+};
+</script>
+
+<style scoped>
+#textContainer {
+  font-weight: bold;
+}
+</style>
+```
+
+我们行行来解读
+
+```js
+import { ref } from 'vue';
+
+// 使用 ref 创建一个响应式数据
+const message = ref('hello, world!');
+```
+
+这里引入了ref响应函数，并用ref声明一个初始值为”**hello, world!**“的变量，这样，当页面启动的时候，{{}}双大括号会读取里面变量对应的初始值，这里读取的变量为message，它对应的初始值就是”**hello, world!**“。
+
+```js
+// 定义方法
+const changeText = () => {
+  message.value = '你好，中国！';
+};
+```
+
+这里声明了一个方法，通过点击按钮触发方法，会改变message得值为**你好，中国！**，然后{{}}会显示message变量最新的值，然后显示为**你好，中国！。**
+
+这里就是我们vue响应式的好处，我们一旦声明了一个ref响应式变量，只要这个变量的值一遍，对应页面的值就自动变更了，不用再调用document等js原生方法，是不是超级简洁和方便！
+
+> 总结一下：
+>
+> - 使用ref函数将你的变量包装起来，就能做到响应式
+> - 使用ref包装的变量如果想在setup中使用，必须通过变量.value才能获取到值
+> - 在template模版中，不用.value，因为vue会自动给你加上.value
+
+## 6、reactive函数
+
+### 语法
+
+```js
+// 引入reactive
+import { reactive } from 'vue';
+// 声明响应式对象reactive
+const reactiveObject = reactive({ /* 对象属性 */ });
+```
+
+### 示例
+
+```vue
+<template>
+  <div>
+    <p>Count is: {{ myObject.count }}</p>
+    <button @click="increment">增加</button>
+  </div>
+</template>
+
+<script setup>
+import { reactive } from 'vue';
+
+// 使用 reactive 创建一个包含响应式数据的对象
+const myObject = reactive({
+  count: 0
+});
+
+// 定义方法
+const increment = () => {
+  myObject.count++;
+};
+</script>
+```
+
+## 7、ref函数与reactice函数的区别
 
