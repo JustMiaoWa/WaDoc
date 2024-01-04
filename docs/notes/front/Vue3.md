@@ -278,3 +278,126 @@ const increment = () => {
 
 ## 7、ref函数与reactice函数的区别
 
+> 1. ref 可以定义基本数据类型、也可以定义对象数据类型
+> 2. reactive 只能定义对象数据类型
+
+区别：
+
+> 1. ref 定义的变量必须.value才能访问（你可以使用volar插件在vscode中设置里勾选do not value，这样vscode会自动给你加上.value）
+>
+> 2. reactive 使用时会有局限性，当你重新替换给变量赋值时，变量的响应式会丢失
+>   举个例子：
+>
+>   ```js
+>   let state = reactive({ count: 0 })
+>   
+>   // 上面的 ({ count: 0 }) 引用将不再被追踪
+>   // (响应性连接已丢失！)
+>   state = reactive({ count: 1 })
+>   ```
+>
+>   同样的，解构操作也会丢失响应式
+>
+>   ```js
+>   const state = reactive({ count: 0 })
+>   
+>   // 当解构时，count 已经与 state.count 断开连接
+>   let { count } = state
+>   // 不会影响原始的 state
+>   count++
+>   ```
+>
+
+
+
+## 8、toRefs和toRef
+
+<mark>toRefs和toRef都是用于解构响应式对象后，让解构出来的变量仍然具有响应式</mark>
+
+### toRef
+
+```vue
+<script setup>
+  import { reactive, toRef } from 'vue';
+
+  let info = reactive({
+    name: 'Echo',
+    age: 26,
+  })
+
+  let age = toRef(info, 'age');
+
+  const updateInfoObjAge = () => {
+    info.age++;
+  }
+  const updateAge = () => {
+    age.value++;
+  }
+</script>
+
+<template>
+  <div id="app">
+    <p>info对象中的age：{{ info.age }}</p>
+    <button @click="updateInfoObjAge">更新info对象中的 age</button>
+
+    <br />
+    <p>使用toRef函数转换后的age：{{ age }}</p>
+    <button @click="updateAge">更新 age</button>
+  </div>
+</template>
+```
+
+我们使用 reactive 创建了一个名为 info 的响应式对象，包含 name 和 age 属性。
+
+然后使用 toRef 函数将 info 对象的 age 属性转换为一个独立的 ref 对象。
+
+接着定义了两个方法 updateInfoObjAge 和 updateAge，分别用于更新 info 对象的 age 属性和 age 引用的值
+
+从上面的代码中，我们可以看到，age 属性是使用 toRef 函数转换的具有响应式的 ref 属性，当我们更新时，使用 reactive 定义的响应式对象 info 中的 age 也会随着更新
+
+### toRefs
+
+```vue
+<script setup>
+  import { reactive, toRefs } from 'vue';
+
+  let info = reactive({
+    name: 'Echo',
+    age: 26,
+    gender: 'Male',
+  })
+
+  let { name, age, gender } = toRefs(info);
+
+  const update = () => {
+    name.value = 'Julie';
+    age.value = 33;
+    gender.value = 'Female';
+  }
+</script>
+
+<template>
+  <div id="app">
+    <p>info对象中的name：{{ info.name }}</p>
+    <p>info对象中的age：{{ info.age }}</p>
+    <p>info对象中的gender：{{ info.gender }}</p>
+
+    <br />
+    <p>解构出来的name：{{ name }}</p>
+    <p>解构出来的age：{{ age }}</p>
+    <p>解构出来的gender：{{ gender }}</p>
+    <button @click="update">更新数据</button>
+  </div>
+</template>
+```
+
+首先，使用 reactive 函数创建了一个响应式对象 info，包含了 name、age 和 gender 三个属性，同时设置了初始值。
+
+接着，使用 toRefs 函数将 info 对象转换为多个独立的响应式引用对象。然后通过解构赋值，把 name、age 和 gender 三个响应式引用对象分别赋给了相应的变量。
+
+最后，添加了一个按钮，点击按钮会触发 update 函数，在 update 函数中，通过修改响应式引用对象的 value 属性来更新数据的值。
+
+我们可以看到，解构出来的每个属性，都是独立的具有 ref 响应式的属性，因此，我们需要使用 .value 才能访问和修改其值。
+
+
+
