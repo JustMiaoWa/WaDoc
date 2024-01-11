@@ -13,6 +13,10 @@ module.exports = {
       nav: [
         { text: '首页', link: '/' },
         {
+          text: '公路车自组知识',
+          link: '/roadbikes/zz'
+        },
+        {
           text: '软考',
           ariaLabel: 'softexam',
           items:[

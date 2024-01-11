@@ -286,7 +286,7 @@ const increment = () => {
 > 1. ref 定义的变量必须.value才能访问（你可以使用volar插件在vscode中设置里勾选do not value，这样vscode会自动给你加上.value）
 >
 > 2. reactive 使用时会有局限性，当你重新替换给变量赋值时，变量的响应式会丢失
->   举个例子：
+>     举个例子：
 >
 >   ```js
 >   let state = reactive({ count: 0 })
@@ -311,6 +311,8 @@ const increment = () => {
 
 
 ## 8、toRefs和toRef
+
+使用reactive出来的响应式对象，在解构之后是不具备响应式的。
 
 <mark>toRefs和toRef都是用于解构响应式对象后，让解构出来的变量仍然具有响应式</mark>
 
@@ -399,5 +401,434 @@ const increment = () => {
 
 我们可以看到，解构出来的每个属性，都是独立的具有 ref 响应式的属性，因此，我们需要使用 .value 才能访问和修改其值。
 
+## 9、computed计算属性
 
+ computed计算属性是指可以依赖别的值，自动追踪依赖式响应。
+
+computed是一个方法，<mark>返回一个ref属性</mark>，你可以在script中通过.value获取访问值，在模版中也会自动解包。
+
+下面是一个例子：
+
+```vue
+<template>
+    姓：<input type="text" v-model="firstName">
+    名：<input type="text" v-model="lastName">
+    全名：<span>{{ fullName }}</span>
+</template>
+<script setup>
+import { ref,computed } from "vue";
+let firstName = ref("")
+let lastName = ref("")
+
+let fullName = computed(()=> {
+    return firstName.value.slice(0,1).toUpperCase() + firstName.value.slice(1) + '--' + lastName.value
+})
+</script>
+```
+
+但是上面的计算属性是只读的，当你尝试直接修改计算属性，他会报以下错误
+
+![](Vue3.assets/202401042251777.png)
+
+有没有方法可以直接修改computed计算属性呢，当然可以！
+
+```vue
+<template>
+    姓：<input type="text" v-model="firstName">
+    名：<input type="text" v-model="lastName">
+    全名：<span>{{ fullName }}</span>
+    <button @click="changeFullName">直接修改fullName</button>
+</template>
+<script setup>
+import { ref,computed } from "vue";
+let firstName = ref("")
+let lastName = ref("")
+
+let fullName = computed({
+    get(){
+        return firstName.value.slice(0,1).toUpperCase() + firstName.value.slice(1) + '--' + lastName.value
+    },
+    set(newVal){
+        firstName.value = newVal.split('-')[0]
+        lastName.value = newVal.split('-')[1]
+    }
+})
+
+let changeFullName = ()=>{
+    fullName.value = "li-si"
+}
+</script>
+```
+
+## 10、watch监听属性
+
+watch是一个函数，函数有三个参数：第一个参数是被监听的变量，第二个参数是回调函数（就是当监听的变量发生变化时所执行的函数），【回调函数有两个参数，第一个是newVal，第二个是oldVal】，第三个参数是一个配置对象，比如深度监听deep，立即监听immediate。
+
+### 情况一：**监听ref定义的基本类型的数据**
+
+**监听ref定义的基本类型的数据**
+
+```vue
+<template>
+    <span>sum: {{ sum }}</span>
+    <button @click="addSum">+1</button>
+</template>
+<script setup>
+import { ref,watch } from "vue";
+let sum = ref(0)
+
+let addSum = () => {
+    sum.value += 1
+}
+
+const stopWath = watch(sum,(newVal,oldVal) => {
+    console.log("sum改变了",newVal,oldVal);
+    if(newVal > 10){
+        stopWath()
+    }
+})
+
+
+</script>
+```
+
+> 注意点
+>
+> 1、监听ref定义的基本类型，watch函数的第一个参数直接写变量就可以 ，<mark>不用.value</mark>
+
+### 情况二：**监听ref定义的对象类型的数据**
+
+**监听ref定义的对象类型的数据**
+
+```vue
+<template>
+    姓名：<p>{{ person.name }}</p>
+    年龄：<p>{{ person.age }}</p>
+    <button @click="changeName">修改姓名</button>
+    <button @click="changeAge">修改年龄</button>
+    <button @click="changePerson">修改全部</button>
+</template>
+<script setup>
+import { ref,watch } from "vue";
+let person = ref({
+    name: 'zhangsan',
+    age: 18
+})
+
+let changeName = () => {
+    person.value.name += '~'
+}
+
+let changeAge = () => {
+    person.value.age += 1
+}
+
+let changePerson = () => {
+    person.value = { name:'lisi', age:20}
+}
+
+watch(person,(nv,ov) => {
+    console.log("person改变了",nv,ov);
+},{deep:true})
+
+
+</script>
+```
+
+> 注意点：
+>
+> 1、监听ref定义的对象类型时，如果没有深度监听属性，那么修改对象中的某一个属性是不会被监听到改变
+>
+> 2、监听ref定义的对象类型时，如果加上了深度监听属性，<mark>无论是修改对象中的某一个属性还是修改整个对象都会被监听到</mark>，但是如果只是修改对象中的某一个属性，所监听到的属性的新值和旧值都是一样的
+
+### 情况三：监听reactive定义的对象类型的数据
+
+```vue
+<template>
+    姓名：<p>{{ person.name }}</p>
+    年龄：<p>{{ person.age }}</p>
+    <button @click="changeName">修改姓名</button>
+    <button @click="changeAge">修改年龄</button>
+    <button @click="changePerson">修改全部</button>
+    <hr>
+    c的值:<p> {{ a.b.c }}</p>
+    <button @click="changeC">修改c的值</button>
+</template>
+<script setup>
+import { reactive,watch } from "vue";
+let person = reactive({
+    name: 'zhangsan',
+    age: 18
+})
+
+
+let changeName = () => {
+    person.name += '~'
+}
+
+let changeAge = () => {
+    person.age += 1
+}
+
+let changePerson = () => {
+    Object.assign(person,{name:'lisi',age:20})
+}
+
+watch(person,(nv,ov) => {
+    console.log("person改变了",nv,ov);
+})
+
+let a = reactive({
+    b: {
+        c: 10
+    }
+})
+
+let changeC = () => {
+    a.b.c += 1
+}
+
+watch(a,(nv,ov) => {
+    console.log("a值被改变了",nv,ov)
+})
+
+
+</script>
+```
+
+> 注意点：
+>
+> 1、监听reactive定义的对象数据与监听ref定义的对象数据一样，修改内部数据 新值与旧值相同，修改整个数据，新值与旧值也相同 
+>
+> 但有所不同的是，reactive的对象数据类型<mark>默认深度监听，且不可修改</mark>
+
+### 情况四：监听对象数据类型中的某一个属性
+
+```vue
+<template>
+    姓名：<p>{{ person.name }}</p>
+    年龄：<p>{{ person.age }}</p>
+    <button @click="changeName">修改姓名</button>
+    <button @click="changeAge">修改年龄</button>
+    <button @click="changePerson">修改全部</button>
+    
+</template>
+<script setup>
+import { ref,reactive,watch } from "vue";
+let person = ref({
+    name: 'zhangsan',
+    age: 18
+})
+
+
+let changeName = () => {
+    person.value.name += '~'
+}
+
+let changeAge = () => {
+    person.value.age += 1
+}
+
+let changePerson = () => {
+    person.value = {name:'lisi',age:20}
+    // Object.assign(person,{name:'lisi',age:20})
+}
+
+watch(() => person.value.name,(nv,ov) => {
+    console.log("person改变了",nv,ov);
+})
+
+</script>
+```
+
+> 注意点：
+>
+> 1、无论是监听ref定义还是reactive定义的对象类型中的某一个属性，都必须写成函数式监听
+
+### 情况五：同时监听多个数据
+
+```vue
+<template>
+    姓名：<p>{{ person.name }}</p>
+    年龄：<p>{{ person.age }}</p>
+    车1：<p>{{ person.car.c1 }}</p>
+    车2：<p>{{ person.car.c2 }}</p>
+    <button @click="changeName">修改姓名</button>
+    <button @click="changeAge">修改年龄</button>
+    <button @click="changePerson">修改全部</button>
+    
+</template>
+<script setup>
+import { ref,reactive,watch } from "vue";
+let person = ref({
+    name: 'zhangsan',
+    age: 18,
+    car: {
+        c1: '奔驰',
+        c2: '宝马'
+    }
+})
+
+
+let changeName = () => {
+    person.value.name += '~'
+}
+
+let changeAge = () => {
+    person.value.age += 1
+}
+
+let changePerson = () => {
+    person.value = {name:'lisi',age:20 ,car:{c1:'雅迪',c2:'艾玛'}}
+}
+
+watch([() => person.value.name,() => person.value.car.c1],(nv,ov) => {
+    console.log("person改变了",nv,ov);
+})
+
+</script>
+```
+
+> 注意点
+>
+> 1、监听多个数据必须以数组形式，然后函数里面的newVal，oldVal也是数组
+
+## 11、watchEffect监听函数
+
+watchEffect函数对比watch函数：
+
+watchEffect函数会立即运行，并且会自动的监听你在函数中使用的值（适合你要监听的数据比较多的时候）
+
+举个例子：
+
+```vue
+<template>
+    姓名：<p>{{ person.name }}</p>
+    年龄：<p>{{ person.age }}</p>
+    车1：<p>{{ person.car.c1 }}</p>
+    车2：<p>{{ person.car.c2 }}</p>
+    <button @click="changeName">修改姓名</button>
+    <button @click="changeAge">修改年龄</button>
+    <button @click="changePerson">修改全部</button>
+    
+</template>
+<script setup>
+import { ref,reactive,watch,watchEffect } from "vue";
+let person = ref({
+    name: 'zhangsan',
+    age: 18,
+    car: {
+        c1: '奔驰',
+        c2: '宝马'
+    }
+})
+
+
+let changeName = () => {
+    person.value.name += '~'
+}
+
+let changeAge = () => {
+    person.value.age += 1
+}
+
+let changePerson = () => {
+    person.value = {name:'lisi',age:20 ,car:{c1:'雅迪',c2:'艾玛'}}
+}
+
+watchEffect(() => {
+    console.log("person改变了",person.value);
+    console.log("person改变了name",person.value.name);
+    console.log("person改变了age",person.value.age);
+})
+
+</script>
+```
+
+## 12、ref标签
+
+先来回顾Vue2中的ref标签，我们通过给元素添加ref='xxx'的属性，然后在代码中通过this.$refs.xxx获取到dom元素
+
+```vue
+<template>
+  <div id="app">
+    <div ref="hello">小猪课堂</div>
+  </div>
+</template>
+<script>
+export default {
+  mounted() {
+    console.log(this.$refs.hello); // <div>小猪课堂</div>
+  },
+};
+</script>
+```
+
+在Vue3中获取元素的方式与Vue2不同，在Vue3中我们是没有this对象的，我们需要通过ref引用来获取dom元素
+
+```vue
+<template>
+    <p ref="hello">你好</p>
+    <button @click="getP">点击dom元素</button>
+</template>
+<script setup>
+import { ref } from "vue";
+
+let hello = ref(null)
+let getP = () => {
+    console.log(hello.value)  // <p>你好</p>
+}
+</script>
+```
+
+当然前面都是默认的html元素，如果是我们**自己定义的组件**呢
+
+子组件：
+
+```vue
+<template>
+    <p ref="hello">你好</p>
+    <button @click="getP">点击dom元素</button>
+</template>
+<script setup>
+import { ref } from "vue";
+
+let hello = ref()
+let a = ref(0)
+let b = ref(1)
+let c = ref(2)
+let getP = () => {
+    console.log(hello.value)
+}
+</script>
+```
+
+父组件：
+
+```vue
+<template>
+  <button @click="getSon">获取子元素数据</button>
+ <Person ref="p"></Person>
+</template>
+
+<script lang="ts" setup>
+import Person from './components/Person.vue'
+import { ref } from 'vue'
+
+let p = ref(null)
+
+let getSon = () => {
+  console.log(p.value)
+  console.log(p.value.a)  // undefined
+}
+</script>
+```
+
+默认情况下，父组件不能访问子组件的数据，所以上面是undefined
+
+需要在子组件中使用defineExpose({  a,  b }) 暴露数据，而且不需要引入
+
+```vue
+defineExpose({a,b})
+```
 
