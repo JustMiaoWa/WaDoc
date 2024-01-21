@@ -3,8 +3,8 @@ module.exports = {
     head:[
       ['link',{rel:'icon',href:'/img/top.png'}]
     ],
-    title: '哇子学习笔记',
-    description: '哇子学习笔记',
+    title: '哇记',
+    description: '哇记',
     themeConfig: {
       smoothScroll: true,
       logo: '/img/top.png',
@@ -13,16 +13,16 @@ module.exports = {
       nav: [
         { text: '首页', link: '/' },
         {
-          text: '公路车自组知识',
-          link: '/roadbikes/zz'
-        },
-        {
           text: '软考',
           ariaLabel: 'softexam',
           items:[
             {text:'博主软考之旅',link:'/softexam/myselftrip/'},
             {text:'中级•软件设计师',link:'/softexam/middle/computerFoundation'},
           ]
+        },
+        {
+          text: '公路车知识',
+          link: '/roadbikes/zz'
         },
         { 
           text: '关于', 
@@ -34,7 +34,8 @@ module.exports = {
           items:[
             {text:'前端',items:[
               {text:'JS高级',link:'/notes/front/JSGaoji/jsAdvance'},
-              {text:'Vite搭建Vue3',link:'/notes/front/Vue3'}
+              {text:'Vue-cli搭建Vue2',link:'/notes/front/Vue2'},
+              {text:'Vite搭建Vue3',link:'/notes/front/Vue3'},
             ]},
           ]
         }
