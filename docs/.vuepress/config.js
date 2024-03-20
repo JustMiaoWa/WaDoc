@@ -37,6 +37,12 @@ module.exports = {
               {text:'Vue-cli搭建Vue2',link:'/notes/front/Vue2'},
               {text:'Vite搭建Vue3',link:'/notes/front/Vue3'},
             ]},
+            {
+              text:'Linux',
+              items:[
+                {text:'Linux基础',link:'/notes/linux/LinuxBase'}
+              ]
+            }
           ]
         }
       ],
