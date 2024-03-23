@@ -25,7 +25,6 @@ jobs:
          CI: true
       - name: vuepress build
         run: |
-          npm run docs:dev
           npm run docs:build
         env:
           CI: true
