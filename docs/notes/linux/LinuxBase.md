@@ -492,19 +492,224 @@ ln -s 参数1 参数2
 
 ![image-20240323224514442](LinuxBase.assets/image-20240323224514442.png)
 
+## 9、日期和时区
+
+查看日期
+
+```shell
+date [-d] [+格式化字符串]
+```
+
+选项：-d：一般用于日期计算。
+
+![image-20240324134652970](LinuxBase.assets/image-20240324134652970.png)
+
+校准时间可以利用**ntp程序**
+
+## 10、网络
+
+### 10.1 ping
+
+ping命令，可以检查指定的网络服务器是否可以可联通的状态
+
+```shell
+ping [-c num] ip或主机名
+```
+
+选项：-c，检查的次数，不使用-c选项，默认无限次数检查
+
+参数：ip或主机名，被检查的服务器的ip地址或主机名地址
+
+示例：
+
+```shell
+ping -c 4 www.baidu.com
+```
+
+检查baidu.com是否可以联通，并且检查4次
+
+### 10.2 wget
+
+wget是一个非交互式的文件下载器，可以在命令行内下载网络文件
+
+```shell
+wget [-b] url
+```
+
+选项：-b：表示后台下载，会将日志写入到当前工作目录的wget-log文件中
+
+参数：url：表示下载链接
+
+示例：
+
+```shell
+wget -b http://archive.apache.org/dist/hadoop/common/hadoop-3.3.0/hadoop-3.3.0.tar.gz
+```
+
+### 10.3 curl
+
+curl可以发送http网络请求，可用于：下载文件、获取信息等
+
+```shell
+curl [-O] url
+```
+
+选项：-O：用于下载文件时，当url是下载文件的链接时，可以使用此项来保存文件
+
+参数：url，要发起请求的网络地址
+
+## 11、端口
+
+可以通过netstat命令，查看端口占用情况
+
+```shell
+netstat -anp | grep 6000
+```
+
+netstat -anp | grep 端口号，安装netstat：yum -y install net-tools
+
+![image-20240324145416982](LinuxBase.assets/image-20240324145416982.png)
+
+可以看到6000端口被进程7437占用
+
+## 12、进程
+
+```shell
+ps -ef
+```
+
+查看系统所有的进程
+
+可以携带 | grep 过滤一些数据
+
+```shell
+ps -ef | grep java
+```
+
+就可以过滤java相关的进程，当然最后一条是不算的，它表示这个命令本身，因为命令本身也带了java
+
+![image-20240324150445996](LinuxBase.assets/image-20240324150445996.png)
 
 
 
+### 关闭进程
+
+```shell
+kill [-9] 进程号
+```
+
+结束进程，-9表示：强制结束进程
+
+## 13、查看系统状态
+
+```shell
+top
+```
+
+top命令查看Linux系统的运行状态，相当于window的任务管理器，可以查看cpu、内存等的运行情况
+
+![image-20240324151343100](LinuxBase.assets/image-20240324151343100.png)
 
 
 
+第一行：
+
+![image-20240324151441663](LinuxBase.assets/image-20240324151441663.png)
+
+`top`：命令名称，`15:13:35`表示当前时间，`up 6:22` 表示已经启动6分钟了，`2 user` 表示2个用户
+
+第二行：
+
+![image-20240324151626548](LinuxBase.assets/image-20240324151626548.png)
+
+Task：一共162个进程，一个正在运行，161个正在睡眠，0个停止，0个僵尸
+
+第三行：
+
+![image-20240324151729718](LinuxBase.assets/image-20240324151729718.png)
+
+Cpu使用率
+
+第四五行：
+
+![image-20240324151822329](LinuxBase.assets/image-20240324151822329.png)
 
 
 
+Kib Mem：物理内存，total：总量字节，free：空闲 used：已使用   buff/cache 占用
 
+Kib Swap：虚拟内存，total：总量字节，free：空闲 used：已使用   buff/cache 占用
 
+## 14、环境变量
 
+环境变量就是一组信息记录，KeyValue形式，用于操作系统运行的时候记录关键信息
 
+env 命令可以查看系统的全部环境变量
+
+通过$符号，可以取出环境变量的值
+
+如何修改环境变量：
+
+​	修改/etc/profile 文件，配置完成后使用source命令使其生效
+
+## 15、解压和压缩
+
+Linux系统中，压缩格式一般分为2种，
+
+- .tar 称为tarball，归档文件。
+- .gz，也常见.tar.gz,gzip格式压缩文件。
+
+针对两种格式均可使用 tar命令对其压缩和解压的操作
+
+```shell
+tar [-c -v -x -f -z -C] 参数1 参数2 参数..... 参数N
+```
+
+-c：创建压缩文件，用于压缩模式
+
+-v：显示压缩、解压过程，用于查看进度
+
+-x：解压模式
+
+-f：要创建的文件，或要解压的文件 ， -f选项必须在所有选项位置处于最后一个
+
+-z：gzip模式，不使用-z 就是普通的tarball模式
+
+-C：选择解压的目的地，用于解压模式
+
+示例：
+
+```shell
+tar -cvf test.tar 1.txt 2.txt
+```
+
+将1.txt 2.txt 使用普通模式压缩成test.tar
+
+示例：
+
+```shell
+tar -zcvf test.tar.gz 1.txt 2.txt
+```
+
+将1.txt 2.txt 压缩到test.tar.gz文件中
+
+示例：
+
+```shell
+tar -xvf test.tar -C /home/www/test
+```
+
+将test.tar文件解压到  /home/www/test 目录下
+
+示例：
+
+```shell
+tar -zxvf test.tar.gz -C /home/www/test
+```
+
+将文件test.tar.gz 解压到 /home/www/test 目录下
+
+## 16、实战
 
 
 
