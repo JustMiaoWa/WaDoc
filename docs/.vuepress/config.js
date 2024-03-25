@@ -40,7 +40,8 @@ module.exports = {
             {
               text:'Linux',
               items:[
-                {text:'Linux基础',link:'/notes/linux/LinuxBase'}
+                {text:'Linux基础',link:'/notes/linux/LinuxBase'},
+                {text:'Linux实战',link:'/notes/linux/LinuxShizhan'}
               ]
             }
           ]
