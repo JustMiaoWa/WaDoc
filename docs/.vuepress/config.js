@@ -41,7 +41,8 @@ module.exports = {
               text:'Linux',
               items:[
                 {text:'Linux基础',link:'/notes/linux/LinuxBase'},
-                {text:'Linux实战',link:'/notes/linux/LinuxShizhan'}
+                {text:'Linux实战',link:'/notes/linux/LinuxShizhan'},
+                {text:'Docker基础',link:'/notes/linux/DockerBase'}
               ]
             }
           ]
