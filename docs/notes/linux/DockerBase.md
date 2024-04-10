@@ -685,19 +685,324 @@ CMD ["/etc/nginx/nginx.conf"] # 变参
 
 构建一个镜像，自带centos7+vim+ifconfig+jdk8
 
+注意：Dockerfile没有后缀名
+
+```shell
+FROM centos:7
+MAINTAINER wazi<1421372365@qq.com>
+
+ENV MYPATH /usr/local
+WORKDIR $MYPATH
+
+
+# 安装vim
+RUN yum -y install vim
+# 安装ifconfig
+RUN yum -y install net-tools
+# 安装java8及lib库
+RUN yum -y install glibc.i686
+RUN mkdir /usr/local/java
+# 将文件添加到docker容器内,ADD命令会自动解压
+ADD jdk-8u11-linux-x64.tar.gz /usr/local/java/
+# 配置jdk
+ENV JAVA_HOME /usr/local/java/jdk1.8.0_11
+ENV JRE_HOME $JAVA_HOME/jre
+ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib:$CLASSPATH
+ENV PATH $JAVA_HOME/bin:$PATH
+
+EXPOSE 80
+
+CMD echo $MYPATH
+CMD echo "success......ok"
+CMD /bin/bash
+```
 
 
 
+构建镜像（注意后面有个点，必须跟上）
+
+```shell
+# 注意：定义的TAG后面有个空格，空格后面有个点
+# docker build -t 新镜像名字:TAG .
+docker build -t ubuntu:1.0.1 .
+```
 
 
 
+## 9、Docker网络
+
+[可参考地址](https://blog.csdn.net/weixin_53269650/article/details/136344317)
+
+docker安装并启动服务后，会在宿主机中添加一个虚拟网卡。
 
 
 
+在Docker服务启动前，使用 `ifconfig` 或 `ip addr` 查看网卡信息：
 
 
 
+- `ens33`或`eth0`：本机网卡
 
+- `lo`：本机回环网络网卡
+
+- 可能有`virbr0`（CentOS安装时如果选择的有相关虚拟化服务，就会多一个以网桥连接的私网地址的`virbr0`网卡，作用是为连接虚拟网卡提供NAT访问外网的功能。如果要移除该服务，可以使用 `yum remove libvirt-libs.x86_64`）
+
+
+
+使用 `systemctl start docker`启动Docker服务后，会多出一个 `docker0` 网卡。
+
+
+
+作用：
+
+
+
+- 容器间的互联和通信以及端口映射
+
+- 容器IP变动时候可以通过服务名直接网络通信而不受到影响
+
+
+
+Docker容器的网络隔离，是通过Linux内核特性 `namespace`和 `cgroup` 实现的。
+
+
+
+### docker网络命令
+
+```shell
+docker network ls
+```
+
+如果没有修改过docker network，则默认有3个网络模式：
+
+
+
+- `bridge`
+
+- `host`
+
+- `none`
+
+
+
+ Docker 的网络模式：
+
+| 网络模式  | 简介                                                         | 使用方式                           |
+| --------- | ------------------------------------------------------------ | ---------------------------------- |
+| bridge    | 为每一个容器分配、设置IP等，并将容器连接到一个docker0 虚拟网桥，默认为该模式 | --network bridge                   |
+| host      | 容器将不会虚拟出自己的网卡、配置自己的IP等，而是使用宿主机的IP和端口 | --network host                     |
+| none      | 容器有独立的 Network namespace，但并没有对齐进行任何网络设置，如分配 veth pari  和 网桥连接、IP等 | --network none                     |
+| container | 新创建的容器不会创建自己的网卡和配置自己的IP，而是和一个指定的容器共享IP、端口范围等 | --network container:NAME或者容器ID |
+
+
+
+查看某个容器的网络模式：
+
+```shell
+# 通过inspect获取容器信息，最后20行即为容器的网络模式信息
+docker inspect 容器ID | tail -n 20
+```
+
+
+
+### 自定义网络
+
+容器间的互联和通信以及端口映射。
+
+
+
+容器 IP 变动时候可以通过服务名直接网络通信而不受影响。（类似Eureka，通过服务名直接互相通信，而不是写死IP地址）。
+
+自定义桥接网络（自定义网络默认使用的是桥接网络 `bridge`）：
+
+1、新建网络
+
+```shell
+docker network create tomcat_network
+```
+
+2、查看网络列表 
+
+```shell
+docker network ls
+```
+
+3、创建容器时，指定加入我们自定义的网络中
+
+```shell
+docker run -d -p 8081:8080 --network tomcat_network --name tomcat1 tomcat:8.5-jdk8-corretto
+
+docker run -d -p 8082:8080 --network tomcat_network --name tomcat2 tomcat:8.5-jdk8-corretto
+```
+
+4、此时进入`tomcat1`中，使用`ping`命令测试连接`tomcat2`容器名，发现可以正常连通 
+
+```shell
+# 安装ifconfig命令
+yum install -y net-tools
+# 安装ip addr命令
+yum install -y iproute
+# 安装ping命令
+yum install -y iputils
+
+# 直接ping容器名，不需要ping IP地址
+ping tomcat2
+```
+
+## 10 、Docker-compose容器编排
+
+`Docker-Compose` 是 Docker 官方的开源项目，负责实现对Docker容器集群的快速编排。
+
+
+
+`Docker-Compose`可以管理多个Docker容器组成一个应用。需要定义一个yaml格式的配置文件 `docker-compose.yml`，配置好多个容器之间的调用关系，然后只需要一个命令就能同时启动/关闭这些容器。
+
+
+
+Docker建议我们每个容器中只运行一个服务，因为Docker容器本身占用资源极少，所以最好是将每个服务单独的分割开来。但是如果我们需要同时部署多个服务，每个服务单独构建镜像构建容器就会比较麻烦。所以 Docker 官方推出了 `docker-compose` 多服务部署的工具。
+
+
+
+Compose允许用户通过一个单独的 `docker-compose.yml` 模板文件来定义一组相关联的应用容器为一个项目（`project`）。可以很容易的用一个配置文件定义一个多容器的应用，然后使用一条指令安装这个应用的所有依赖，完成构建。
+
+
+
+核心概念：
+
+- 服务（`service`）：一个个应用容器实例
+
+- 工程（`project`）：由一组关联的应用容器组成的一个完整业务单元，在`docker-compose.yml`中定义
+
+
+
+Compose使用的三个步骤：
+
+1. 编写 Dockerfile 定义各个应用容器，并构建出对应的镜像文件
+
+1. 编写 `docker-compose.yml`，定义一个完整的业务单元，安排好整体应用中的各个容器服务
+
+1. 执行 `docker-compose up` 命令，其创建并运行整个应用程序，完成一键部署上线
+
+
+
+### 安装Docker-Compose
+
+`Docker-Compose`的版本需要和Docker引擎版本对应，可以参照官网上的[对应关系](https://docs.docker.com/compose/compose-file/compose-file-v3/)
+
+安装Compose：
+
+```shell
+# 例如从github下载 2.5.0版本的docker-compose
+# 下载下来的文件放到 /usr/local/bin目录下，命名为 docker-compose
+curl -L https://github.com/docker/compose/releases/download/v2.5.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+
+# 添加权限
+chmod +x /usr/local/bin/docker-compose
+
+# 验证
+docker-compose version
+```
+
+### 常用命令
+
+执行命令时，需要在对应的`docker-compose.yml`文件所在目录下执行。
+
+```shell
+# 查看帮助
+docker-compose -h
+# 创建并启动docker-compose服务：（类似 docker run）
+docker-compose up
+# 后台运行
+docker-compose up -d
+# 停止并删除容器、网络、卷、镜像：（类似 docker stop +  docker rm）
+docker-compose down
+# 进入容器实例内部
+docker-compose exec <yml里面的服务id> /bin/bash
+# 展示当前docker-compose编排过的运行的所有容器
+docker-compose ps
+# 展示当前docker-compose编排过的容器进程
+docker-compose top
+# 查看容器输出日志
+docker-compose log <yml里面的服务id>
+# 检查配置
+docker-compose config
+# 有问题才输出
+docker-compose config -q
+# 重启服务
+docker-compose restart
+# 启动服务：（类似 docker start）
+docker-compose start
+# 停止服务
+docker-compose stop
+```
+
+### compose编排实例
+
+```yml
+# docker-compose文件版本号
+version: "3"
+
+# 配置各个容器服务
+services:
+  microService:
+    image: springboot_docker:1.0
+    container_name: ms01  # 容器名称，如果不指定，会生成一个服务名加上前缀的容器名
+    ports:
+      - "6001:6001"
+    volumes:
+      - /app/microService:/data
+    networks:
+      - springboot_network
+    depends_on:  # 配置该容器服务所依赖的容器服务
+      - redis
+      - mysql
+
+  redis:
+    image: redis:6.0.8
+    ports:
+      - "6379:6379"
+    volumes:
+      - /app/redis/redis.conf:/etc/redis/redis.conf
+      - /app/redis/data:/data
+    networks:
+      - springboot_network
+    command: redis-server /etc/redis/redis.conf
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
+      MYSQL_DATABASE: 'db_springboot'
+      MYSQL_USER: 'springboot'
+      MYSQL_PASSWORD: 'springboot'
+    ports:
+      - "3306:3306"
+    volumes:
+      - /app/mysql/db:/var/lib/mysql
+      - /app/mysql/conf/my.cnf:/etc/my.cnf
+      - /app/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - springboot_network
+    command: --default-authentication-plugin=mysql_native_password # 解决外部无法访问
+
+networks:
+  # 创建 springboot_network 网桥网络
+  springboot_network:
+```
+
+编写完成`docker-compose.yml`后，进行语法检查：
+
+```shell
+# 进行语法检查
+docker-compose config -q
+```
+
+如果语法检查没有任何问题，进行创建、启动：
+
+```shell
+docker-compose up -d
+```
 
 
 
